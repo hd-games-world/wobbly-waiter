@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Wobbly Waiter</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            background: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #game-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); z-index: 10;
+        }
+        #start-screen h1 { color: #e94560; font-size: 2.5rem; margin-bottom: 1rem; }
+        #start-screen p { color: #a0a0a0; margin-bottom: 2rem; text-align: center; padding: 0 2rem; }
+        .btn { padding: 1rem 2rem; font-size: 1.2rem; border: none; border-radius: 50px; cursor: pointer; }
+        #start-btn { background: #e94560; color: white; }
+        #start-btn:hover { transform: scale(1.05); }
+        #game-over {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(26, 26, 46, 0.9); z-index: 10;
+        }
+        #game-over h2 { color: #e94560; font-size: 3rem; margin-bottom: 1rem; }
+        #game-over p { color: #fff; font-size: 1.5rem; margin-bottom: 2rem; }
+        #restart-btn { background: #0f3460; color: white; }
+        
+        #calibration-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(26, 26, 46, 0.95); z-index: 20;
+        }
+        #calibration-screen h2 { color: #e94560; font-size: 2rem; margin-bottom: 1rem; text-align: center; }
+        #calibration-screen p { color: #a0a0a0; text-align: center; padding: 0 2rem; }
+    </style>
+</head>
+<body>
+    <canvas id="game-canvas"></canvas>
+    
+    <div id="start-screen">
+        <h1>Wobbly Waiter</h1>
+        <p>Tilt your phone to balance the glass on the tray!<br>Don't let it fall!</p>
+        <button id="start-btn" class="btn" disabled>Loading...</button>
+    </div>
+    
+    <div id="game-over">
+        <h2>Game Over!</h2>
+        <p id="score">Score: 0</p>
+        <button id="restart-btn" class="btn">Try Again</button>
+    </div>
+    
+    <div id="calibration-screen">
+        <h2>Hold your phone steady...</h2>
+        <p>Keep the phone in your playing position</p>
+    </div>
+
+    <script>
+        window.pyodideReady = false;
+        window.gameState = {
+            tiltAngle: 0,
+            isMobile: false,
+            gameStarted: false,
+            score: 0,
+            initialBeta: null,
+            initialGamma: null,
+            calibrating: true
+        };
+        
+        async function initPyodide() {
+            window.pyodide = await loadPyodide();
+            window.pyodideReady = true;
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('start-btn').textContent = "Start Game";
+        }
+        initPyodide();
+        
+        function requestSensorAccess() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && 
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('deviceorientation', handleOrientation);
+            }
+        }
+        
+        function handleOrientation(event) {
+            let gamma = event.gamma || 0;
+            let beta = event.beta || 0;
+            
+            if (window.gameState.initialGamma === null) {
+                window.gameState.initialGamma = gamma;
+                window.gameState.initialBeta = beta;
+                
+                setTimeout(() => {
+                    window.gameState.calibrating = false;
+                }, 1000);
+                
+                return;
+            }
+            
+            if (window.gameState.calibrating) return;
+            
+            let relativeGamma = gamma - window.gameState.initialGamma;
+            let relativeBeta = beta - window.gameState.initialBeta;
+            
+            if (window.innerWidth > window.innerHeight) {
+                window.gameState.tiltAngle = relativeGamma;
+            } else {
+                window.gameState.tiltAngle = relativeBeta;
+            }
+        }
+        initPyodide();
+        
+        function requestSensorAccess() {
+            if (typeof DeviceOrientationEvent !== 'undefined' && 
+                typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                window.addEventListener('deviceorientation', handleOrientation);
+            }
+        }
+        
+        function handleOrientation(event) {
+            if (!window.gameState.gameStarted) return;
+            
+            let gamma = event.gamma || 0;
+            let beta = event.beta || 0;
+            
+            if (window.innerWidth > window.innerHeight) {
+                window.gameState.tiltAngle = gamma;
+            } else {
+                window.gameState.tiltAngle = (beta - 45);
+            }
+        }
+        
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-screen').style.display = 'none';
+            
+            if (window.gameState.isMobile) {
+                document.getElementById('calibration-screen').style.display = 'flex';
+                
+                setTimeout(() => {
+                    window.gameState.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    window.gameState.tiltAngle = 0;
+                    window.gameState.initialGamma = null;
+                    window.gameState.initialBeta = null;
+                    window.gameState.calibrating = true;
+                    if (window.gameState.isMobile) requestSensorAccess();
+                    
+                    setTimeout(() => {
+                        document.getElementById('calibration-screen').style.display = 'none';
+                        window.gameState.calibrating = false;
+                        window.gameState.gameStarted = true;
+                    }, 1500);
+                }, 100);
+            } else {
+                window.gameState.gameStarted = true;
+            }
+        });
+        
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('calibration-screen').style.display = 'flex';
+            
+            window.gameState.tiltAngle = 0;
+            window.gameState.score = 0;
+            window.gameState.initialBeta = null;
+            window.gameState.initialGamma = null;
+            window.gameState.calibrating = true;
+            
+            setTimeout(() => {
+                document.getElementById('calibration-screen').style.display = 'none';
+                window.gameState.calibrating = false;
+                window.gameState.gameStarted = true;
+                
+                if (window.pyGameReset) {
+                    window.pyGameReset();
+                }
+            }, 1500);
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (window.gameState.gameStarted) {
+                let centerX = window.innerWidth / 2;
+                let offset = e.clientX - centerX;
+                let normalized = offset / centerX;
+                window.gameState.tiltAngle = normalized * 45;
+            }
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (window.gameState.gameStarted && e.touches.length > 0) {
+                e.preventDefault();
+                let touch = e.touches[0];
+                let centerX = window.innerWidth / 2;
+                let offset = touch.clientX - centerX;
+                let normalized = offset / centerX;
+                window.gameState.tiltAngle = normalized * 45;
+            }
+        }, { passive: false });
+    </script>
+
+    <script type="py">
+import asyncio
+import js
+import math
+import random
+
+from pyodide.ffi import create_proxy
+
+class Game:
+    def __init__(self):
+        self.canvas = js.document.getElementById("game-canvas")
+        self.ctx = self.canvas.getContext("2d")
+        self.width = js.window.innerWidth
+        self.height = js.window.innerHeight
+        self.canvas.width = self.width
+        self.canvas.height = self.height
+        
+        self.tray_x = self.width / 2
+        self.tray_y = self.height * 0.6
+        self.tray_angle = 0
+        
+        self.glass_x = self.tray_x
+        self.glass_y = self.tray_y - 60
+        self.glass_vx = 0
+        self.glass_vy = 0
+        self.glass_angle = 0
+        self.glass_ang_vel = 0
+        
+        self.score = 0
+        self.game_over = False
+        self.last_time = 0
+        
+        self.tray_images = {}
+        self.glass_images = {}
+        self.waiter_images = {}
+    
+    def reset(self):
+        self.tray_x = self.width / 2
+        self.tray_y = self.height * 0.6
+        self.tray_angle = 0
+        
+        self.glass_x = self.tray_x
+        self.glass_y = self.tray_y - 30
+        self.glass_vx = 0
+        self.glass_vy = 0
+        self.glass_angle = 0
+        self.glass_ang_vel = 0
+        
+        self.score = 0
+        self.game_over = False
+    
+    def load_image(self, name, src):
+        img = js.Image.new()
+        img.src = src
+        self.waiter_images[name] = img
+        self.tray_images[name] = img
+        self.glass_images[name] = img
+    
+    def draw_image_centered(self, img, x, y, width, height):
+        if img and hasattr(img, 'complete') and img.complete:
+            self.ctx.save()
+            self.ctx.translate(x, y)
+            self.ctx.drawImage(img, -width/2, -height/2, width, height)
+            self.ctx.restore()
+    
+    def update(self, dt):
+        if self.game_over:
+            return
+        
+        if not getattr(game, 'initialized', False):
+            return
+        
+        if not hasattr(self, 'score_start_time'):
+            self.score_start_time = 0
+            self.gameplay_started = False
+        
+        tilt = 0
+        try:
+            tilt = js.window.gameState.tiltAngle
+        except:
+            return
+        
+        if not self.gameplay_started:
+            if abs(tilt) > 3:
+                self.gameplay_started = True
+                current_time = js.window.performance.now() if hasattr(js.window, 'performance') else 0
+                self.score_start_time = current_time
+        
+        if not self.gameplay_started:
+            return
+        
+        tilt = max(-90, min(90, tilt))
+        
+        self.tray_angle = math.radians(tilt)
+        
+        gravity = 400
+        gx = gravity * math.sin(self.tray_angle)
+        
+        friction = 0.98
+        self.glass_vx += gx * dt
+        self.glass_vx *= friction
+        
+        self.glass_x += self.glass_vx * dt
+        
+        tray_half_width = 90
+        tray_left = self.tray_x - tray_half_width
+        tray_right = self.tray_x + tray_half_width
+        
+        if self.glass_x < tray_left:
+            self.glass_x = tray_left
+            self.glass_vx *= -0.2
+        elif self.glass_x > tray_right:
+            self.glass_x = tray_right
+            self.glass_vx *= -0.2
+        
+        self.glass_y = self.tray_y - 30
+        
+        torque = self.glass_vx * 0.005
+        self.glass_ang_vel += torque * dt
+        self.glass_ang_vel *= 0.98
+        self.glass_angle += self.glass_ang_vel
+        
+        if abs(self.glass_x - self.tray_x) > tray_half_width - 10:
+            self.game_over = True
+            self.show_game_over()
+        
+        if abs(tilt) > 80:
+            self.game_over = True
+            self.show_game_over()
+        
+        if self.gameplay_started:
+            current_time = js.window.performance.now() if hasattr(js.window, 'performance') else 0
+            time_since_start = current_time - self.score_start_time if self.score_start_time > 0 else 0
+            
+            if time_since_start > 2000 and abs(self.glass_x - self.width/2) < 20:
+                self.score += 1
+                try:
+                    js.window.gameState.score = self.score
+                except:
+                    pass
+    
+    def draw(self):
+        self.ctx.fillStyle = "#1a1a2e"
+        self.ctx.fillRect(0, 0, self.width, self.height)
+        
+        self.draw_background()
+        
+        self.ctx.save()
+        self.ctx.translate(self.tray_x, self.tray_y)
+        self.ctx.rotate(self.tray_angle)
+        self.draw_tray_sprite(0, 0)
+        self.ctx.restore()
+        
+        self.ctx.save()
+        self.ctx.translate(self.glass_x, self.glass_y)
+        self.ctx.rotate(self.glass_angle)
+        self.draw_glass_sprite(0, 0)
+        self.ctx.restore()
+        
+        self.draw_waiter_sprite(self.width/2, self.height * 0.85)
+        self.draw_ui()
+    
+    def draw_background(self):
+        gradient = self.ctx.createLinearGradient(0, 0, 0, self.height)
+        gradient.addColorStop(0, "#1a1a2e")
+        gradient.addColorStop(1, "#16213e")
+        self.ctx.fillStyle = gradient
+        self.ctx.fillRect(0, 0, self.width, self.height)
+    
+    def draw_tray_sprite(self, x, y):
+        w, h = 220, 25
+        self.ctx.fillStyle = "#8b5a2b"
+        self.ctx.beginPath()
+        self.ctx.ellipse(x, y, w/2, h/2, 0, 0, math.pi * 2)
+        self.ctx.fill()
+        self.ctx.fillStyle = "#654321"
+        self.ctx.beginPath()
+        self.ctx.ellipse(x, y + 3, w/2 - 10, h/2 - 3, 0, 0, math.pi * 2)
+        self.ctx.fill()
+    
+    def draw_glass_sprite(self, x, y):
+        w, h = 45, 70
+        self.ctx.fillStyle = "rgba(200, 220, 255, 0.3)"
+        self.ctx.beginPath()
+        self.ctx.moveTo(x - w/2 + 5, y - h/2)
+        self.ctx.lineTo(x - w/2, y + h/2)
+        self.ctx.lineTo(x + w/2, y + h/2)
+        self.ctx.lineTo(x + w/2 - 5, y - h/2)
+        self.ctx.closePath()
+        self.ctx.fill()
+        self.ctx.strokeStyle = "rgba(255,255,255,0.5)"
+        self.ctx.lineWidth = 2
+        self.ctx.stroke()
+    
+    def draw_waiter_sprite(self, x, y):
+        w, h = 80, 120
+        self.ctx.fillStyle = "#2d2d44"
+        self.ctx.beginPath()
+        self.ctx.ellipse(x, y, w/2, h/3, 0, 0, math.pi * 2)
+        self.ctx.fill()
+        self.ctx.fillStyle = "#ffffff"
+        self.ctx.beginPath()
+        self.ctx.arc(x, y - h/3, 20, 0, math.pi * 2)
+        self.ctx.fill()
+        self.ctx.fillStyle = "#e94560"
+        self.ctx.fillRect(x - w/3, y - h/6, w * 2/3, h/3)
+    
+    def draw_ui(self):
+        self.ctx.fillStyle = "white"
+        self.ctx.font = "24px Arial"
+        self.ctx.textAlign = "left"
+        self.ctx.fillText(f"Score: {self.score}", 20, 40)
+        
+        tilt = 0
+        try:
+            gs = js.window.gameState if js.window else None
+            if gs:
+                tilt = gs.tiltAngle
+        except:
+            pass
+        self.ctx.fillStyle = "#a0a0a0"
+        self.ctx.font = "16px Arial"
+        self.ctx.fillText(f"Tilt: {tilt:.1f}°", 20, 70)
+    
+    def show_game_over(self):
+        try:
+            js.document.getElementById("game-over").style.display = "flex"
+            js.document.getElementById("score").textContent = f"Score: {self.score}"
+        except:
+            pass
+
+game = Game()
+game.initialized = False
+
+def game_loop(timestamp):
+    try:
+        if not hasattr(game, 'last_time'):
+            game.last_time = timestamp
+        
+        dt = (timestamp - game.last_time) / 1000
+        game.last_time = timestamp
+        dt = min(dt, 0.05)
+        
+        if not game.initialized:
+            try:
+                if js.window.gameState.gameStarted:
+                    game.initialized = True
+            except:
+                pass
+        
+        if game.initialized:
+            try:
+                game.update(dt)
+            except:
+                pass
+        
+        try:
+            game.draw()
+        except:
+            pass
+    except:
+        pass
+    
+    js.requestAnimationFrame(create_proxy(game_loop))
+
+js.requestAnimationFrame(create_proxy(game_loop))
+
+def py_game_reset():
+    game.reset()
+    game.initialized = False
+    game.last_time = 0
+
+js.window.pyGameReset = create_proxy(py_game_reset)
+    </script>
+</body>
+</html>
