@@ -1,1 +1,48 @@
 .vscode
+
+# --- [ Operating Systems Junk ] ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux (Arch/KDE/Gnome)
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# --- [ Programming & Environments ] ---
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+.env
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Compilations & Backups
+*.log
+*.tmp
+*.bak
+*.swp
+
+# --- [ Media Production (Kdenlive / Editors) ] ---
+# ملفات البروكسي والنسخ الاحتياطي التلقائي
+*.autosave
+.backup/
+proxy/
