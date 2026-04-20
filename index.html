@@ -3,122 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Wobbly Waiter v0.2.0-alpha</title>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <title>Wobbly Waiter v0.3.0</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- PyScript Assets -->
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-            width: 100%; height: 100%; overflow: hidden;
-            background: #1a1a2e;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        #game-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-
-        #start-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); z-index: 10;
-        }
-
-        #start-screen h1 { color: #e94560; font-size: 2.5rem; margin-bottom: 1rem; text-shadow: 0 0 10px rgba(233,69,96,0.5); }
-
-        .phone-icon {
-            width: 80px; height: 120px;
-            border: 4px solid #e94560;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-            position: relative;
-            animation: tiltPhone 1.5s ease-in-out infinite;
-        }
-
-        .phone-icon::before {
-            content: '';
-            position: absolute;
-            top: 20px; left: 50%;
-            transform: translateX(-50%);
-            width: 30px; height: 40px;
-            background: rgba(233,69,96,0.3);
-            border-radius: 4px;
-        }
-
-        .phone-icon::after {
-            content: '';
-            position: absolute;
-            bottom: 10px; left: 50%;
-            transform: translateX(-50%);
-            width: 20px; height: 4px;
-            background: #e94560;
-            border-radius: 2px;
-        }
-
-        @keyframes tiltPhone {
-            0%, 100% { transform: rotate(-15deg); }
-            50% { transform: rotate(15deg); }
-        }
-
-        .loading-container {
-            width: 200px; margin-bottom: 1rem;
-        }
-
-        .loading-bar {
-            width: 100%; height: 8px;
-            background: #333;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .loading-progress {
-            height: 100%;
-            background: linear-gradient(90deg, #e94560, #ff6b6b);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .loading-text {
-            color: #a0a0a0; font-size: 0.9rem; margin-top: 0.5rem; text-align: center;
-        }
-
-        .difficulty-select { display: flex; gap: 10px; margin-bottom: 1.5rem; }
-
-        .difficulty-btn {
-            padding: 10px 20px; border: 2px solid #e94560; background: transparent;
-            color: #e94560; border-radius: 25px; cursor: pointer; font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .difficulty-btn.selected { background: #e94560; color: white; }
-        .difficulty-btn:hover { transform: scale(1.05); }
-
-        .btn {
-            padding: 1rem 2rem; font-size: 1.2rem; border: none; border-radius: 50px;
-            cursor: pointer; transition: all 0.3s ease; opacity: 0.5; pointer-events: none;
-        }
-
-        #start-btn { background: #e94560; color: white; }
-        #start-btn.ready { opacity: 1; pointer-events: auto; }
-        #start-btn.ready:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(233,69,96,0.5); }
-
-        #game-over {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            background: rgba(26, 26, 46, 0.9); z-index: 10;
-        }
-
-        #game-over h2 { color: #e94560; font-size: 3rem; margin-bottom: 1rem; }
-        #game-over p { color: #fff; font-size: 1.5rem; margin-bottom: 2rem; }
-        #restart-btn { background: #0f3460; color: white; }
-
-        #calibration-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; flex-direction: column; justify-content: center; align-items: center;
-            background: rgba(26, 26, 46, 0.95); z-index: 20;
-        }
-
-        #calibration-screen h2 { color: #e94560; font-size: 2rem; margin-bottom: 1rem; text-align: center; }
-        #calibration-screen p { color: #a0a0a0; text-align: center; padding: 0 2rem; }
-    </style>
 </head>
 <body>
     <canvas id="game-canvas"></canvas>
@@ -130,14 +19,14 @@
             <div class="loading-bar">
                 <div class="loading-progress" id="loading-progress"></div>
             </div>
-            <div class="loading-text" id="loading-text">Loading assets...</div>
+            <div class="loading-text" id="loading-text">Initializing v0.3.0...</div>
         </div>
         <div class="difficulty-select">
             <button class="difficulty-btn" data-difficulty="easy">Easy</button>
             <button class="difficulty-btn selected" data-difficulty="medium">Medium</button>
             <button class="difficulty-btn" data-difficulty="hard">Hard</button>
         </div>
-        <button id="start-btn" class="btn" disabled>Start Game</button>
+        <button id="start-btn" class="btn" disabled>Wait for Logic...</button>
     </div>
 
     <div id="game-over">
@@ -147,95 +36,83 @@
     </div>
 
     <div id="calibration-screen">
-        <h2>Hold your phone steady...</h2>
-        <p>Keep the phone in your playing position</p>
+        <h2>Hold steady...</h2>
+        <p>Calibrating sensors</p>
     </div>
 
+    <!-- The Data Bridge -->
     <script>
-        window.gameVersion = "v0.2.0-alpha";
-        window.pyodideReady = false;
-        window.assetsReady = false;
-
         window.gameState = {
-            tiltAngle: 0,
-            isMobile: false,
-            gameStarted: false,
+            tilt: 0,
             score: 0,
-            initialBeta: null,
-            initialGamma: null,
-            calibrating: true,
-            difficulty: 'medium'
+            isGameOver: false,
+            difficulty: 'medium',
+            gameStarted: false
         };
 
-        function updateLoadingBar(progress, text) {
-            document.getElementById('loading-progress').style.width = progress + '%';
-            document.getElementById('loading-text').textContent = text;
-
-            if (window.pyodideReady && window.assetsReady) {
-                document.getElementById('start-btn').disabled = false;
-                document.getElementById('start-btn').classList.add('ready');
-                document.getElementById('start-btn').textContent = "Start Game";
+        // Responsive Canvas: JS Observer for --vw and --vh
+        const updateViewportVars = () => {
+            const vw = window.innerWidth * 0.01;
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vw', `${vw}px`);
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            
+            // Ensure canvas matches screen
+            const canvas = document.getElementById('game-canvas');
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
             }
-        }
+        };
 
-        async function initPyodide() {
-            updateLoadingBar(30, "Loading Python runtime...");
-            window.pyodide = await loadPyodide();
-            updateLoadingBar(60, "Python ready");
-            window.pyodideReady = true;
+        window.addEventListener('resize', updateViewportVars);
+        updateViewportVars();
 
-            if (window.assetsReady) {
-                updateLoadingBar(100, "Ready to play!");
-            }
-        }
-        initPyodide();
+        // Sensor Integration: Generic Sensor API
+        async function initSensors() {
+            if ('RelativeOrientationSensor' in window) {
+                try {
+                    const permissions = await Promise.all([
+                        navigator.permissions.query({ name: "accelerometer" }),
+                        navigator.permissions.query({ name: "gyroscope" })
+                    ]);
 
-        function onAssetsLoaded() {
-            window.assetsReady = true;
-            if (window.pyodideReady) {
-                updateLoadingBar(100, "Ready to play!");
-            }
-        }
-
-        window.onAssetsLoaded = onAssetsLoaded;
-
-        function requestSensorAccess() {
-            if (typeof DeviceOrientationEvent !== 'undefined' &&
-                typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(response => {
-                        if (response === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation);
-                        }
-                    })
-                    .catch(console.error);
+                    if (permissions.every(p => p.state === "granted")) {
+                        startSensor();
+                    } else {
+                        console.log("Sensor permissions not granted yet");
+                        // Fallback to deviceorientation if needed, but sticking to request
+                    }
+                } catch (error) {
+                    console.log("Generic Sensor API error:", error);
+                }
             } else {
-                window.addEventListener('deviceorientation', handleOrientation);
+                console.log("Generic Sensor API not supported, using DeviceOrientation fallback");
+                window.addEventListener('deviceorientation', (event) => {
+                    if (!window.gameState.gameStarted) return;
+                    // Simple tilt mapping
+                    const tilt = event.beta || 0; 
+                    window.gameState.tilt = tilt;
+                });
             }
         }
 
-        function handleOrientation(event) {
-            let gamma = event.gamma || 0;
-            let beta = event.beta || 0;
-
-            if (window.gameState.initialGamma === null) {
-                window.gameState.initialGamma = gamma;
-                window.gameState.initialBeta = beta;
-                return;
-            }
-
-            if (window.gameState.calibrating) return;
-
-            let relativeGamma = gamma - window.gameState.initialGamma;
-            let relativeBeta = beta - window.gameState.initialBeta;
-
-            if (window.innerWidth > window.innerHeight) {
-                window.gameState.tiltAngle = relativeGamma;
-            } else {
-                window.gameState.tiltAngle = relativeBeta;
-            }
+        function startSensor() {
+            const sensor = new RelativeOrientationSensor({ frequency: 60 });
+            sensor.addEventListener('reading', () => {
+                // Map quaternion to simple tilt (Z-axis rotation roughly)
+                // For foundation v0.3.0, we just need a value in window.gameState.tilt
+                // A basic mapping of the quaternion's y/z components for tilt:
+                const q = sensor.quaternion;
+                const siny_cosp = 2 * (q[3] * q[1] + q[0] * q[2]);
+                const cosy_cosp = 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
+                const angle = Math.atan2(siny_cosp, cosy_cosp);
+                window.gameState.tilt = angle * (180 / Math.PI);
+            });
+            sensor.start();
         }
 
+        // UI Logic
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
@@ -244,567 +121,46 @@
             });
         });
 
-        document.getElementById('start-btn').addEventListener('click', () => {
+        document.getElementById('start-btn').addEventListener('click', async () => {
             document.getElementById('start-screen').style.display = 'none';
-
-            window.gameState.isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             document.getElementById('calibration-screen').style.display = 'flex';
+            
+            await initSensors();
 
             setTimeout(() => {
-                window.gameState.tiltAngle = 0;
-                window.gameState.initialGamma = null;
-                window.gameState.initialBeta = null;
-                window.gameState.calibrating = true;
-                if (window.gameState.isMobile) requestSensorAccess();
-
-                setTimeout(() => {
-                    document.getElementById('calibration-screen').style.display = 'none';
-                    window.gameState.calibrating = false;
-                    window.gameState.gameStarted = true;
-                }, 1500);
-            }, 100);
+                document.getElementById('calibration-screen').style.display = 'none';
+                window.gameState.gameStarted = true;
+            }, 1500);
         });
 
         document.getElementById('restart-btn').addEventListener('click', () => {
             document.getElementById('game-over').style.display = 'none';
-            document.getElementById('calibration-screen').style.display = 'flex';
-
-            window.gameState.tiltAngle = 0;
+            window.gameState.isGameOver = false;
             window.gameState.score = 0;
-            window.gameState.initialBeta = null;
-            window.gameState.initialGamma = null;
-            window.gameState.calibrating = true;
-
-            setTimeout(() => {
-                document.getElementById('calibration-screen').style.display = 'none';
-                window.gameState.calibrating = false;
-                window.gameState.gameStarted = true;
-
-                if (window.pyGameReset) {
-                    window.pyGameReset();
-                }
-            }, 1500);
+            if (window.pyGameReset) window.pyGameReset();
         });
 
-        let lastMouseX = window.innerWidth / 2;
-
+        // Mouse Fallback for testing
         document.addEventListener('mousemove', (e) => {
-            lastMouseX = e.clientX;
             if (window.gameState.gameStarted) {
-                let centerX = window.innerWidth / 2;
-                let offset = e.clientX - centerX;
-                let normalized = offset / centerX;
-                window.gameState.tiltAngle = normalized * 45;
+                const centerX = window.innerWidth / 2;
+                const offset = e.clientX - centerX;
+                window.gameState.tilt = (offset / centerX) * 45;
             }
         });
 
-        document.addEventListener('touchmove', (e) => {
-            if (window.gameState.gameStarted && e.touches.length > 0) {
-                e.preventDefault();
-                let touch = e.touches[0];
-                let centerX = window.innerWidth / 2;
-                let offset = touch.clientX - centerX;
-                let normalized = offset / centerX;
-                window.gameState.tiltAngle = normalized * 45;
-            }
-        }, { passive: false });
+        // Assets callback from Python
+        window.onAssetsLoaded = () => {
+            const startBtn = document.getElementById('start-btn');
+            startBtn.disabled = false;
+            startBtn.classList.add('ready');
+            startBtn.textContent = "Start Game";
+            document.getElementById('loading-progress').style.width = '100%';
+            document.getElementById('loading-text').textContent = "Foundation Ready";
+        };
     </script>
 
-    <script type="py">
-import asyncio
-import js
-import math
-import random
-
-from pyodide.ffi import create_proxy
-
-VERSION = "v0.2.0-alpha"
-DEBUG_MODE = False
-FIXED_DT_CAP = 0.05
-
-class AssetManager:
-    def __init__(self):
-        self.images = {
-            'waiter': None,
-            'tray': None,
-            'glass': None,
-            'background': None
-        }
-        self.loaded = False
-        self.load_count = 0
-        self.total_assets = 4
-        self.load_images()
-
-    def load_images(self):
-        try:
-            bg_img = js.Image.new()
-            bg_img.src = 'assets/background.jpg'
-            bg_img.onload = create_proxy(self._on_image_loaded)
-            bg_img.onerror = create_proxy(self._on_image_error)
-            self.images['background'] = bg_img
-
-            waiter_img = js.Image.new()
-            waiter_img.src = 'assets/waiter.png'
-            waiter_img.onload = create_proxy(self._on_image_loaded)
-            waiter_img.onerror = create_proxy(self._on_image_error)
-            self.images['waiter'] = waiter_img
-
-            tray_img = js.Image.new()
-            tray_img.src = 'assets/tray.png'
-            tray_img.onload = create_proxy(self._on_image_loaded)
-            tray_img.onerror = create_proxy(self._on_image_error)
-            self.images['tray'] = tray_img
-
-            glass_img = js.Image.new()
-            glass_img.src = 'assets/glass.png'
-            glass_img.onload = create_proxy(self._on_image_loaded)
-            glass_img.onerror = create_proxy(self._on_image_error)
-            self.images['glass'] = glass_img
-        except:
-            pass
-
-    def _on_image_loaded(self, event):
-        self.load_count += 1
-        progress = int((self.load_count / self.total_assets) * 40) + 60
-        try:
-            js.document.getElementById('loading-progress').style.width = str(progress) + '%'
-        except:
-            pass
-
-        if self.load_count >= self.total_assets:
-            self.loaded = True
-            try:
-                js.window.onAssetsLoaded()
-            except:
-                pass
-
-    def _on_image_error(self, event):
-        self.load_count += 1
-        if self.load_count >= self.total_assets:
-            self.loaded = True
-            try:
-                js.window.onAssetsLoaded()
-            except:
-                pass
-
-    def is_ready(self):
-        return self.loaded
-
-    def get_image(self, name):
-        return self.images.get(name)
-
-
-class InputManager:
-    def __init__(self):
-        self.filtered_tilt = 0
-        self.alpha = 0.2
-        self.dead_zone = 3
-        self.last_tilt = 0
-        self.lerp_target = 0
-        self.lerp_current = 0
-        self.shiver_offset = 0
-
-    def update(self, raw_tilt, is_mobile):
-        if is_mobile:
-            self.filtered_tilt = self.alpha * raw_tilt + (1 - self.alpha) * self.filtered_tilt
-
-            self.shiver_offset = (random.random() - 0.5) * 1.0
-            if abs(self.filtered_tilt + self.shiver_offset) < self.dead_zone:
-                return 0
-
-            return self.filtered_tilt + self.shiver_offset
-        else:
-            self.lerp_target = raw_tilt
-            self.lerp_current = self.lerp_current + (self.lerp_target - self.lerp_current) * 0.1
-
-            self.shiver_offset = (random.random() - 0.5) * 0.5
-            return self.lerp_current + self.shiver_offset
-
-    def reset(self):
-        self.filtered_tilt = 0
-        self.lerp_current = 0
-        self.lerp_target = 0
-        self.shiver_offset = 0
-
-
-class PhysicsEngine:
-    def __init__(self, difficulty='medium'):
-        self.set_difficulty(difficulty)
-
-    def set_difficulty(self, difficulty):
-        self.difficulty = difficulty
-
-        if difficulty == 'easy':
-            self.gravity = 300
-            self.restoring_k = 0.15
-            self.damping = 0.92
-        elif difficulty == 'hard':
-            self.gravity = 600
-            self.restoring_k = 0.02
-            self.damping = 0.98
-        else:
-            self.gravity = 400
-            self.restoring_k = 0.05
-            self.damping = 0.95
-
-    def update(self, dt, tilt_angle, glass_x, glass_vx, tray_half_width):
-        tray_angle_rad = math.radians(tilt_angle)
-
-        gx = self.gravity * math.sin(tray_angle_rad)
-
-        glass_vx += gx * dt
-        glass_vx *= self.damping
-
-        new_glass_x = glass_x + glass_vx * dt
-
-        return new_glass_x, glass_vx
-
-
-class Game:
-    def __init__(self, asset_manager):
-        self.canvas = js.document.getElementById("game-canvas")
-        self.ctx = self.canvas.getContext("2d")
-
-        self.resize_canvas()
-
-        self.asset_manager = asset_manager
-        self.input_manager = InputManager()
-        self.physics_engine = PhysicsEngine()
-
-        self.waiter_x = self.width / 2
-        self.waiter_y = self.height * 0.85
-        self.waiter_width = 200
-        self.waiter_height = 200
-
-        self.tray_x = self.waiter_x
-        self.tray_y = self.waiter_y - 60
-        self.tray_width = 200
-        self.tray_height = 25
-        self.tray_angle = 0
-
-        self.glass_x = self.tray_x
-        self.glass_y = self.tray_y - 35
-        self.glass_width = 50
-        self.glass_height = 70
-        self.glass_vx = 0
-        self.glass_angle = 0
-        self.glass_ang_vel = 0
-
-        self.score = 0
-        self.game_over = False
-        self.last_time = 0
-
-        self.score_start_time = 1
-        self.gameplay_started = False
-
-        self.debug_mode = DEBUG_MODE
-
-    def resize_canvas(self):
-        self.width = js.window.innerWidth
-        self.height = js.window.innerHeight
-
-        target_aspect = 16 / 9
-        current_aspect = self.width / self.height
-
-        if current_aspect > target_aspect:
-            self.canvas.height = self.height
-            self.canvas.width = self.height * target_aspect
-        else:
-            self.canvas.width = self.width
-            self.canvas.height = self.width / target_aspect
-
-        self.canvas.style.marginLeft = str((js.window.innerWidth - self.canvas.width) / 2) + 'px'
-        self.canvas.style.marginTop = str((js.window.innerHeight - self.canvas.height) / 2) + 'px'
-
-    def set_difficulty(self, difficulty):
-        self.physics_engine.set_difficulty(difficulty)
-
-    def reset(self):
-        self.tray_x = self.waiter_x
-        self.tray_y = self.waiter_y - 60
-        self.tray_angle = 0
-
-        self.glass_x = self.tray_x
-        self.glass_y = self.tray_y - 35
-        self.glass_vx = 0
-        self.glass_angle = 0
-        self.glass_ang_vel = 0
-
-        self.score = 0
-        self.game_over = False
-        self.score_start_time = 0
-        self.gameplay_started = False
-        self.input_manager.reset()
-
-    def update(self, dt):
-        if self.game_over:
-            return
-
-        if not getattr(game, 'initialized', False):
-            return
-
-        dt = min(dt, FIXED_DT_CAP)
-
-        raw_tilt = 0
-        is_mobile = False
-        try:
-            gs = js.window.gameState
-            raw_tilt = gs.tiltAngle if gs else 0
-            is_mobile = gs.isMobile if gs else False
-        except:
-            return
-
-        tilt = self.input_manager.update(raw_tilt, is_mobile)
-
-        if not self.gameplay_started:
-            if abs(tilt) > 3:
-                self.gameplay_started = True
-                try:
-                    self.score_start_time = js.window.performance.now()
-                except:
-                    self.score_start_time = 0
-
-        if not self.gameplay_started:
-            self.tray_angle = math.radians(tilt)
-            return
-
-        tray_half_width = self.tray_width / 2
-
-        self.glass_x, self.glass_vx = self.physics_engine.update(
-            dt, tilt, self.glass_x, self.glass_vx, tray_half_width
-        )
-
-        self.glass_angle = (math.radians(tilt) * 0.5) + (self.glass_vx * 0.15)
-
-        tray_left = self.tray_x - tray_half_width
-        tray_right = self.tray_x + tray_half_width
-
-        if self.glass_x < tray_left:
-            self.glass_x = tray_left
-            self.glass_vx *= -0.2
-        elif self.glass_x > tray_right:
-            self.glass_x = tray_right
-            self.glass_vx *= -0.2
-
-        self.glass_y = self.tray_y - 35
-        self.tray_angle = math.radians(tilt)
-
-        if abs(self.glass_x - self.tray_x) > tray_half_width - 15:
-            self.game_over = True
-            self.show_game_over()
-
-        if abs(tilt) > 80:
-            self.game_over = True
-            self.show_game_over()
-
-        if self.gameplay_started:
-            try:
-                current_time = js.window.performance.now() if hasattr(js.window, 'performance') else 0
-                time_since_start = current_time - self.score_start_time if self.score_start_time > 0 else 0
-
-                if time_since_start > 2000 and abs(self.glass_x - self.width/2) < 20:
-                    self.score += 1
-                    try:
-                        js.window.gameState.score = self.score
-                    except:
-                        pass
-            except:
-                pass
-
-    def draw(self):
-        self.draw_background()
-
-        self.ctx.save()
-        self.ctx.shadowColor = "white"
-        self.ctx.shadowBlur = 8
-
-        self.draw_waiter()
-        self.draw_tray()
-        self.draw_glass()
-
-        self.ctx.restore()
-
-        if self.debug_mode:
-            self.draw_debug()
-
-        self.draw_ui()
-
-    def draw_background(self):
-        img = self.asset_manager.get_image('background')
-        if img and hasattr(img, 'complete') and img.complete:
-            img_width = img.width
-            img_height = img.height
-            canvas_aspect = self.canvas.width / self.canvas.height
-            img_aspect = img_width / img_height
-
-            if img_aspect > canvas_aspect:
-                scale = self.canvas.height / img_height
-            else:
-                scale = self.canvas.width / img_width
-
-            scaled_width = img_width * scale
-            scaled_height = img_height * scale
-            offset_x = (self.canvas.width - scaled_width) / 2
-            offset_y = (self.canvas.height - scaled_height) / 2
-
-            self.ctx.drawImage(img, offset_x, offset_y, scaled_width, scaled_height)
-        else:
-            self.ctx.fillStyle = "#1a1a2e"
-            self.ctx.fillRect(0, 0, self.canvas.width, self.canvas.height)
-
-            gradient = self.ctx.createLinearGradient(0, 0, 0, self.canvas.height)
-            gradient.addColorStop(0, "#1a1a2e")
-            gradient.addColorStop(1, "#16213e")
-            self.ctx.fillStyle = gradient
-            self.ctx.fillRect(0, 0, self.canvas.width, self.canvas.height)
-
-    def draw_waiter(self):
-        img = self.asset_manager.get_image('waiter')
-        if img and hasattr(img, 'complete') and img.complete:
-            self.ctx.drawImage(img,
-                self.waiter_x - self.waiter_width/2,
-                self.waiter_y - self.waiter_height/2,
-                self.waiter_width, self.waiter_height)
-
-    def draw_tray(self):
-        img = self.asset_manager.get_image('tray')
-        if img and hasattr(img, 'complete') and img.complete:
-            self.ctx.save()
-            self.ctx.translate(self.tray_x, self.tray_y)
-            self.ctx.rotate(self.tray_angle)
-            self.ctx.drawImage(img,
-                -self.tray_width/2,
-                -self.tray_height/2,
-                self.tray_width, self.tray_height)
-            self.ctx.restore()
-
-    def draw_glass(self):
-        img = self.asset_manager.get_image('glass')
-        if img and hasattr(img, 'complete') and img.complete:
-            self.ctx.save()
-            self.ctx.translate(self.glass_x, self.glass_y + self.glass_height/2)
-            self.ctx.rotate(self.glass_angle)
-            self.ctx.drawImage(img,
-                -self.glass_width/2,
-                -self.glass_height,
-                self.glass_width, self.glass_height)
-            self.ctx.restore()
-
-    def draw_debug(self):
-        self.ctx.strokeStyle = "red"
-        self.ctx.lineWidth = 2
-
-        tray_half = self.tray_width / 2
-        self.ctx.save()
-        self.ctx.translate(self.tray_x, self.tray_y)
-        self.ctx.rotate(self.tray_angle)
-        self.ctx.strokeRect(-tray_half, -self.tray_height/2, self.tray_width, self.tray_height)
-        self.ctx.restore()
-
-        self.ctx.save()
-        self.ctx.translate(self.glass_x, self.glass_y + self.glass_height/2)
-        self.ctx.rotate(self.glass_angle)
-        self.ctx.strokeRect(-self.glass_width/2, -self.glass_height, self.glass_width, self.glass_height)
-        self.ctx.restore()
-
-    def draw_ui(self):
-        self.ctx.font = "bold 48px Arial"
-        self.ctx.textAlign = "left"
-
-        self.ctx.strokeStyle = "black"
-        self.ctx.lineWidth = 4
-        self.ctx.strokeText(f"Score: {self.score}", 30, 60)
-        self.ctx.fillStyle = "white"
-        self.ctx.fillText(f"Score: {self.score}", 30, 60)
-
-        tilt = 0
-        try:
-            gs = js.window.gameState if js.window else None
-            if gs:
-                tilt = gs.tiltAngle
-        except:
-            pass
-
-        self.ctx.font = "bold 32px Arial"
-        self.ctx.strokeText(f"Tilt: {tilt:.1f}°", 30, 100)
-        self.ctx.fillStyle = "#a0a0a0"
-        self.ctx.fillText(f"Tilt: {tilt:.1f}°", 30, 100)
-
-        self.ctx.font = "bold 24px Arial"
-        self.ctx.textAlign = "right"
-        self.ctx.strokeText(f"Mode: {self.physics_engine.difficulty}", self.canvas.width - 30, 60)
-        self.ctx.fillStyle = "#a0a0a0"
-        self.ctx.fillText(f"Mode: {self.physics_engine.difficulty}", self.canvas.width - 30, 60)
-
-        self.ctx.font = "16px Arial"
-        self.ctx.textAlign = "left"
-        self.ctx.fillStyle = "#666"
-        self.ctx.fillText(VERSION, 30, self.canvas.height - 20)
-
-    def show_game_over(self):
-        try:
-            js.document.getElementById("game-over").style.display = "flex"
-            js.document.getElementById("score").textContent = f"Score: {self.score}"
-        except:
-            pass
-
-
-asset_manager = AssetManager()
-game = None
-
-def init_game():
-    global game
-    game = Game(asset_manager)
-    game.initialized = False
-
-def game_loop(timestamp):
-    try:
-        if game is None:
-            js.requestAnimationFrame(create_proxy(game_loop))
-            return
-
-        if not hasattr(game, 'last_time'):
-            game.last_time = timestamp
-
-        dt = (timestamp - game.last_time) / 1000
-        game.last_time = timestamp
-        dt = min(dt, FIXED_DT_CAP)
-
-        if asset_manager.is_ready() and not game.initialized:
-            try:
-                if js.window.gameState.gameStarted:
-                    game.initialized = True
-            except:
-                pass
-
-        if game.initialized:
-            try:
-                game.update(dt)
-            except:
-                pass
-
-        try:
-            game.draw()
-        except:
-            pass
-    except:
-        pass
-
-    js.requestAnimationFrame(create_proxy(game_loop))
-
-def py_game_reset():
-    if game:
-        game.reset()
-        try:
-            difficulty = js.window.gameState.difficulty if js.window.gameState else 'medium'
-            game.set_difficulty(difficulty)
-        except:
-            pass
-
-init_game()
-js.requestAnimationFrame(create_proxy(game_loop))
-
-js.window.pyGameReset = create_proxy(py_game_reset)
-    </script>
+    <!-- Logic: main.py -->
+    <script type="py" src="main.py" config='{"interpreter_terminate_on_error": false}'></script>
 </body>
 </html>

@@ -1,34 +1,13 @@
-# Agent Task: Mobile-First Slapstick Physics Game (Python/PyScript)
 
-## Project Overview
-Build a "Wobbly Waiter" game where the player tilts their phone to balance a glass on a tray. 
-Goal: Simple task + Difficult controls = Mechanical Comedy.
+> **Role:** Senior Frontend Engineer.
+> **Context:** The current game v0.2.0-alpha has major layout and UI interaction issues.
+> 
+> **Specific Instructions:**
+> 1. **Responsive Background:** Update `draw_background` to calculate a scale factor that covers the entire canvas (Object-fit: Cover logic). Center the image horizontally and vertically.
+> 2. **Coordinate Refactor:** Replace all hard-coded pixel values for `waiter_y`, `tray_y`, and `glass_y` with relative values based on `self.canvas.height` (e.g., Waiter should be at `height * 0.85`).
+> 3. **UI Fix:** Ensure the `#game-over` div has a `z-index: 999` and that all parent containers do not have `pointer-events: none` when the game ends. Verify the Restart button listener.
+> 4. **Asset Fail-safe:** In `AssetManager`, if `onerror` triggers, set a flag `use_placeholders = True` so the game can proceed with colored rectangles instead of getting stuck on the loading bar.
+> 5. **Physics Update:** Add a damping factor to the $glass\_angle$ to prevent jittery movement when the device is near 0 degrees.
+> 
+> **Deliverable:** Modified PyScript and CSS blocks that integrate seamlessly with the existing structure.
 
-## Technical Stack
-- Language: Python 3.11+
-- Runtime: PyScript (Pyodide)
-- Physics: Pymunk
-- Graphics: HTML5 Canvas API (Drawing Sprites over Physics bodies)
-- Inputs: DeviceOrientation API (Tilt) + Mouse/Touch for fallback.
-
-## Core Logic Requirements
-1. **Tilt Handling**: 
-    - Implement a JavaScript-to-Python bridge to capture `deviceorientation` events.
-    - Important: Add a "Request Sensor Access" button for iOS/Android compatibility.
-2. **Physics Engine (Pymunk)**:
-    - Gravity: Strong enough to make the glass slide.
-    - Tray: A kinematic/dynamic body that tilts based on the phone's 'beta' or 'gamma' angle.
-    - Glass: A dynamic body with high friction on the bottom but low stability.
-3. **Visuals (Sprite Support)**:
-    - The code must be ready to load 3 images: `waiter.png`, `tray.png`, `glass.png`.
-    - Create a placeholder function to draw these images centered on their physical coordinates.
-4. **Mobile First UI**:
-    - Canvas should occupy 100% of the viewport.
-    - Game over state: If glass Y coordinate > Screen Height or Tilt angle > 45 degrees.
-
-## File Structure (Single File Preferred)
-- `index.html`: Contains HTML shell, CSS for the "Start" button, and the `<py-script>` block.
-- `assets/`: (Directory for images you will provide later).
-
-## Specific Instruction for the Agent
-"Please write a robust index.html using PyScript. Use `micropip` to install `pymunk`. Ensure the physics loop runs at 60fps and maps the phone's tilt to the tray's rotation angle. Provide a clean fallback for desktop testing using mouse X position to simulate tilt."

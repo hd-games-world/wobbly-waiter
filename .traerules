@@ -1,0 +1,21 @@
+# Wobbly Waiter 2026 - Master Agent Rules
+project_identity: "Slapstick Physics Game (PyScript + Canvas 2D)"
+vram_constraint: "800MB - Optimized for HP Z800 (Arch) & Mac. NO WebGL."
+
+# Roles Definition for the Orchestrator (Trae)
+agents_matrix:
+  - role: "Physics Engineer (Claude 4.6 via Trae)"
+    skills: ["Kinematics", "Percentage-based Coordinates (0.0 to 1.0)", "Python 3.12"]
+    focus: "Calculating glass movement and gravity logic in Python."
+    
+  - role: "UI & Sensor Specialist (Trae Native Builder)"
+    skills: ["Responsive CSS Variables", "Generic Sensor API", "Canvas Context 2D"]
+    focus: "Global scaling, window resizing, and mobile orientation bridge."
+
+  - role: "Ops & Docs (Gemini CLI)"
+    skills: ["Git Workflows", "Documentation", "Code Review"]
+    focus: "Synchronizing files between Arch and Mac, maintaining v0.3.0 milestones."
+
+# Architectural Standards
+communication: "All data exchange MUST happen via window.gameState."
+rendering_standard: "SVG Assets only. Relative positioning (no fixed pixels)."
